@@ -1,0 +1,116 @@
+(* First time MaTeX config *)
+Needs["PacletManager`"]
+ResourceFunction["MaTeXInstall"][](* Tex instalation and Ghostscript required*)
+ConfigureMaTeX["pdfLaTeX" -> "C:\\Users\\Sergio\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\pdflatex.exe", "Ghostscript"->"C:\\Program Files\\gs\\gs10.04.0\\bin\\gswin64c.exe"]
+
+Out[14]= PacletObject[Name: MaTeX
+Version: 1.7.10
+
+]
+Out[15]= {CacheSize->100,WorkingDirectory->Automatic,pdfLaTeX->C:\Users\Sergio\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe,Ghostscript->C:\Program Files\gs\gs10.04.0\bin\gswin64c.exe}
+Needs["MaTeX`"] (* everytime load MaTeX for TeX and test it*)
+<<MaTeX`
+MaTeX["x^2 + \\sin(x)"]
+Out[22]= 
+In[182]:= (* values provided for the model *)
+constPSI = -1.43 
+b=5.39
+c = 2+2.5*b
+Ks = 100 *(0.01   *   60*60*24) (* using loomy sand for now and making cm/d --> m/s *)
+dr =6*(10^-4)  (* m root diameter *)
+Zr=0.6  (* m rooting depth, should we use the 75% of it? *)
+RAIw=5 
+RAI =RAIw
+lsr= Sqrt[dr*Zr/RAI]
+psillist ={0.0,0.1,0.2, 0.3, 0.4, 0.5, 0.6, 0.7} 
+k1 = 0.005 (* m^2/W units doesnt matter*)
+k2 = 0.0016 (* K^-2 units doesnt matter *)
+Topt = 298 (* K *)
+psil0 = -4.5 (* MPa *)
+psil1 = -0.05 (* MPa *)
+Dx = 0.0077 (* g /kg -->kg/kg *)
+RH=0.4  (* percentage as a number from 0 to 1 *)
+R = 8.314 (*m^3 Pa / K mol*)
+vw = 18*(10^-6) (* m^3/mol *)
+p0=0.1013 (* MPa *)
+gamma = 9.81 (* kg /m^3 *)
+gammaw = 9800 (*N/m^3*)
+
+Out[182]= -1.43
+Out[183]= 5.39
+Out[184]= 15.475
+Out[185]= 86400.
+Out[186]= 3/5000
+Out[187]= 0.6
+Out[188]= 5
+Out[189]= 5
+Out[190]= 0.00848528
+Out[191]= {0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7}
+Out[192]= 0.005
+Out[193]= 0.0016
+Out[194]= 298
+Out[195]= -4.5
+Out[196]= -0.05
+Out[197]= 0.0077
+Out[198]= 0.4
+Out[199]= 8.314
+Out[200]= 9/500000
+Out[201]= 0.1013
+Out[202]= 9.81
+Out[203]= 9800
+In[3]:= Evap[gsrp_, psis_,psil_]= gsrp * (psis-psil)
+Out[3]= gsrp (-psil+psis)
+In[206]:= K[s_]= Ks*s^c
+Out[206]= 86400. s^15.475
+In[167]:= gsrp[gsr_, gp_]= (gsr*gp)/(gsr+gp)
+gsa[gs_,ga_]=(gs*ga)/(gs+ga)
+gsr[K_] = K/(gammaw*lsr)
+gs[gsmax_,fPAR_ ,fTa_, fpsil_,fD_]= gsmax*fPAR*fTa*fpsil*fD
+
+Out[167]= (gp gsr)/(gp+gsr)
+Out[168]= (ga gs)/(ga+gs)
+Out[169]= 0.0120256 K
+Out[170]= fD fPAR fpsil fTa gsmax
+In[204]:= psis[s_]= constPSI*s^(-b) 
+psia[a_]= ((R*T/vw)Log[RH] + gammaw*Zr ) * (10^-6) (* Mpa convertion *)
+Out[204]= -(1.43/s^5.39)
+Out[205]= (5880. -423225. T)/1000000
+In[172]:= fphi[phi_]= 1-Exp[-k1*phi]
+fTa[Ta_]=1-k2*(Ta-Topt)^2
+fpsil[psil_]=(psil-psil0)/(psil1-psil0)
+fD[D_]= 1 / (1 + (D/Dx))
+
+Out[172]= 1-E^(-0.005 phi)
+Out[173]= 1-0.0016 (-298+Ta)^2
+Out[174]= 0.224719 (4.5 +psil)
+Out[175]= 1/(1+129.87 D)
+In[132]:= Deficit[VPD_]=(0.622/p0)*VPD
+Out[132]= (0.622 VPD)/p0
+In[176]:= VPD[esat_]= esat-e
+Out[176]= -e+esat
+In[177]:= e =RH*esat
+Out[177]= 0.4 esat
+In[178]:= esat[T_]=6.1094*Exp[17.625*(T-243.04)/T]
+Out[178]= 6.1094 E^((17.625 (-243.04+T))/T)
+
+Efinal[psil_, s_] = Evap[gsrp[gsr[K[s]], gp[]],psis[],psil]
+Out[1]= Evap[gsrp[gsr,gp],psis[],psil]
+(* Jarvis function plots *)
+fphiplot=Plot[
+fphi[phi],{phi,0,800},
+PlotLabel->MaTeX["f_\\phi(\\phi)"],
+AxesLabel->{MaTeX["\\phi"],MaTeX["f_\\phi"]} ];
+fTaplot=Plot[
+fTa[Ta], {Ta,273.15,313.15},
+PlotLabel->MaTeX["f_{T_a}(T_a)"],
+AxesLabel->{MaTeX["T_a"],MaTeX["f_{T_a}"]} ];
+fDplot=Plot[
+fD[D],{D,0,0.05},
+PlotLabel->MaTeX["f_{D}(D)"],
+AxesLabel->{MaTeX["D"],MaTeX["f_{D}"]} ];
+fpsilplot=Plot[
+fpsil[psil],{psil, psil0,psil1},
+PlotLabel->MaTeX["f_{\\psi_l}(\\psi_l)"],
+AxesLabel->{MaTeX["\\psi_l"],MaTeX["f_{\\psi_l}"]} ];
+In[52]:= GraphicsGrid[{{fphiplot,fTaplot},{fDplot,fpsilplot}}]
+Out[52]= 
