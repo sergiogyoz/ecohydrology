@@ -1,0 +1,6 @@
+#downloadDate:20241202121732
+#numberOfSitesDownloaded:1
+#dataFiles
+SITE_ID,filename,start_year,end_year,version,filetype,timestamp
+US-LA2,AMF_US-LA2_BASE_HH_3-5.csv,2011,2022,3-5,FLUX-MET,202312081610
+US-LA2,AMF_US-LA2_BIF_20240731.xlsx,,,20240731,BADM,202407310149
